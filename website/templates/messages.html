@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}Strona główna{% endblock %}
+
+
+{% block body %}
+
+<div class="">
+  <div class="row">
+    <div class="col">
+      {% for user in users %}
+        <div>
+            <a href="/messages/{{user.id}}">{{user.login}}</a>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="col">
+        <div>
+        Rozmawiasz z: {{ user_to.login }}
+
+
+
+        <div id="messageBox" style="overflow-y: scroll;height:400px">
+            {% for msg in messages %}
+            <div name="m_{{msg.id}}">
+
+                {% if current_user.id == msg.user_id_from %}
+                <div align="right">
+                    <div class="message">
+                        <div class="user-name">{{ current_user.login }}</div>
+                        <div name="text">{{msg.text}}</div>
+                    </div>
+                </div>
+
+                {% else %}
+
+                <div>
+
+                    <div class="message">
+                        <div class="user-name"> {{ user_to.login }}</div>
+                        <div name="text">{{msg.text}}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+            {% endfor %}
+        </div>
+
+        <div>
+            <input class="form-control" id="message" style="width: 300px">
+            <button class="btn btn-success" onclick="sendMessage()">Send</button>
+        </div>
+         </div>
+    </div>
+    <div class="col"></div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+<script>
+    function getCurrentDateString()
+    {
+        let currentDate = new Date();
+        return currentDate.getFullYear() + "-" + (currentDate.getMonth()+1) + "-" + currentDate.getDate() + "T" + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
+    }
+
+    let last_update = getCurrentDateString();
+    
+    function sendMessage()
+    {
+        let text = document.getElementById("message").value;
+        if(text != "")
+        {
+              let xhttp = new XMLHttpRequest();
+              xhttp.onload = function() {
+                    //ta funkcja wywola sie w momencie jak serwer odpowie
+                   // let div = document.createElement("div");
+                   // div.innerHTML = "{{ current_user.login }}: " + text;
+                   // messageBox.appendChild(div);
+                   document.getElementById("message").value = "";
+                }
+
+                let data = {
+                    "user_id_from" : {{current_user.id}},
+                    "user_id_to"  : {{ user_to.id }},
+                    "text" : text
+                };
+
+              xhttp.open("POST", "/api/message", true); //true - funkcja jest nieblokujaca, czyli wykona sie nie czekajac na odpowiedz serwera
+              xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+              xhttp.send(JSON.stringify(data));
+        }
+    }
+
+    function messageExists(msg_id)
+    {
+        let divs = document.getElementsByName("m_" + msg_id);
+        console.log("LEN:" + divs.length + " id:" + "m_" + msg_id);
+        return divs.length > 0;
+    }
+
+    function getMessages(user_to_id)
+    {
+        let xhttp = new XMLHttpRequest();
+              xhttp.onload = function() {
+                    //ta funkcja wywola sie w momencie jak serwer odpowie
+                    last_update = getCurrentDateString();
+                    let data = JSON.parse(xhttp.responseText);
+                    //console.log(data);
+
+                    let messageBox = document.getElementById("messageBox");
+                    for(let i = 0; i < data.length; i++)
+                    {
+                    let msg = data[i];
+                        if(messageExists(msg.id))
+                        {
+                            continue;
+                        }
+
+
+                        let div = document.createElement("div");
+                        let userName = "";
+                        if(msg.user_id_from == {{ current_user.id }})
+                        {
+                            userName = "{{ current_user.login }}<br>";
+                            div.align = "right";
+                        }
+                        else
+                        {
+                            userName = "{{ user_to.login }}";
+                        }
+
+                        let messageDivs = document.getElementsByClassName("message")
+                        let innerDiv = messageDivs[0].cloneNode(true);
+
+                        innerDiv.children[0].innerHTML = userName;
+                        innerDiv.children[1].innerHTML = msg.text;
+                        
+                        div.appendChild(innerDiv);
+                        div.setAttribute("name","m_" + msg.id);
+                        messageBox.appendChild(div);
+
+                        messageBox.scrollTop = messageBox.scrollHeight;
+                    }
+                }
+
+                let data = {
+                    "user_id" : user_to_id,
+                    "last_update" : last_update
+                };
+
+              xhttp.open("POST", "/api/messages", true); //true - funkcja jest nieblokujaca, czyli wykona sie nie czekajac na odpowiedz serwera
+              xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+              xhttp.send(JSON.stringify(data));
+    }
+
+    function init()
+    {
+        let messageBox = document.getElementById("messageBox");
+        messageBox.scrollTop = messageBox.scrollHeight;
+    }
+
+    function update()
+    {
+        getMessages({{ user_to.id }});
+    }
+
+    setInterval(update, 500);
+    init();
+</script>
+
+{% endblock %}
+

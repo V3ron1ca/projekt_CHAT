@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+
+{% block body %}
+
+<form method="POST">
+    {{ form.csrf_token }}
+    <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="card shadow-2-strong" style="border-radius: 1rem;">
+                    <div class="card-body p-5 text-center">
+
+                        <h3 class="mb-5">Registerp</h3>
+
+                        <div class="form-outline mb-4">
+                            {{ form.login(class="form-control form-control-lg") }}
+                            <label for="login" class="form-label">{{ form.login.label }}</label>
+                            {% for error in form.login.errors %}
+                            <p style="color: red;">{{error}}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-outline mb-4">
+                            {{ form.password1(class="form-control form-control-lg") }}
+                            <label for="password1" class="form-label">{{ form.password1.label }}</label>
+                            {% for error in form.password1.errors %}
+                            <p style="color: red;">{{error}}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-outline mb-4">
+                            {{ form.password2(class="form-control form-control-lg") }}
+                            <label for="password2" class="form-label">{{ form.password2.label }}</label>
+                            {% for error in form.password2.errors %}
+                            <p style="color: red;">{{error}}</p>
+                            {% endfor %}
+                        </div>
+
+
+                        <button class="btn btn-primary btn-lg btn-block" type="submit">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
+

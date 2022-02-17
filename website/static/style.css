@@ -1,0 +1,11 @@
+.message {
+  border-radius: 25px;
+  border: 2px solid #73AD21;
+  padding: 10px;
+  display: inline-block;
+}
+
+.user-name {
+    font-size: x-small;
+    font-weight: bold;
+}
